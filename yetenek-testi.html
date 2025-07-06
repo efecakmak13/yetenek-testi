@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Yeteneklerini Test Edelim 🔍</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      background-color: red;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: sans-serif;
+      color: white;
+      font-size: 2rem;
+      cursor: pointer;
+      user-select: none;
+      text-align: center;
+      flex-direction: column;
+      transition: background-color 0.5s;
+    }
+
+    #screamer {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: black;
+      z-index: 100;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      animation: flash 0.2s infinite alternate;
+    }
+
+    @keyframes flash {
+      0% { background-color: black; }
+      100% { background-color: darkred; }
+    }
+
+    #screamer img {
+      width: 100vw;
+      height: 100vh;
+      object-fit: cover;
+      filter: brightness(1.4);
+    }
+
+    #screamer p {
+      position: absolute;
+      color: white;
+      font-size: 36px;
+      bottom: 20px;
+    }
+
+    #feedback {
+      margin-top: 10px;
+      font-size: 1.5rem;
+      color: yellow;
+    }
+
+    #average {
+      font-size: 1.2rem;
+      margin-top: 5px;
+    }
+
+    #controls {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      margin-top: 20px;
+      z-index: 200;
+      position: absolute;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 1rem;
+      background-color: #222;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body onclick="handleClick()">
+  <div id="message">Yeteneklerini test edelim! Hazır ol...</div>
+  <div id="feedback"></div>
+  <div id="average"></div>
+
+  <div id="screamer">
+    <img src="https://i.imgur.com/3hMqdBb.jpg" alt="Korku!" />
+    <p>Korktun mu? 😈</p>
+    <div id="controls">
+      <button onclick="restart()">Bir Daha Denemek?</button>
+      <button onclick="share()">Arkadaşını da korkut 😱</button>
+    </div>
+  </div>
+
+  <audio id="scream" src="https://www.myinstants.com/media/sounds/movie_1.mp3"></audio>
+
+  <script>
+    let startTime;
+    let canClick = false;
+    let clickCount = 0;
+    let reactionTimes = [];
+
+    function startGame() {
+      document.body.style.backgroundColor = "red";
+      document.getElementById("message").innerText = "Hazırlan...";
+      document.getElementById("feedback").innerText = "";
+      document.getElementById("average").innerText = "";
+      const randomTime = Math.random() * 4000 + 2000;
+
+      setTimeout(() => {
+        document.body.style.backgroundColor = "green";
+        document.getElementById("message").innerText = "TIKLA KOÇUM!";
+        startTime = Date.now();
+        canClick = true;
+      }, randomTime);
+    }
+
+    function handleClick() {
+      if (document.getElementById("screamer").style.display === "flex") return;
+
+      if (!canClick) {
+        document.getElementById("message").innerText = "Çok erken tıkladın! 😅";
+        document.getElementById("feedback").innerText = "Yeşil ışığı bekle!";
+        setTimeout(startGame, 2000);
+      } else {
+        const reactionTime = Date.now() - startTime;
+        reactionTimes.push(reactionTime);
+        clickCount++;
+
+        document.getElementById("message").innerText = `Refleks süren: ${reactionTime} ms`;
+        document.getElementById("feedback").innerText = getFeedbackMessage(reactionTime);
+        document.getElementById("average").innerText = `Ortalama süren: ${getAverage()} ms`;
+        canClick = false;
+
+        if (clickCount === 10) {
+          setTimeout(triggerScreamer, 1000);
+        } else {
+          setTimeout(startGame, 3000);
+        }
+      }
+    }
+
+    function getFeedbackMessage(time) {
+      if (time < 150) return "JET gibi uçtun! 🚀";
+      if (time < 300) return "Gayet iyi gidiyorsun! 🔥";
+      if (time < 500) return "Biraz daha odaklan... 🧐";
+      return "İnterneti bekler gibi tıkladın... 📶";
+    }
+
+    function getAverage() {
+      const sum = reactionTimes.reduce((a, b) => a + b, 0);
+      return Math.round(sum / reactionTimes.length);
+    }
+
+    function triggerScreamer() {
+      const scream = document.getElementById("scream");
+      const screamerDiv = document.getElementById("screamer");
+
+      document.body.style.backgroundColor = "black";
+      document.getElementById("message").style.display = "none";
+      document.getElementById("feedback").style.display = "none";
+      document.getElementById("average").style.display = "none";
+
+      // Ekranı titreştir
+      const interval = setInterval(() => {
+        const x = Math.random() * 10 - 5;
+        const y = Math.random() * 10 - 5;
+        document.body.style.transform = `translate(${x}px, ${y}px)`;
+      }, 50);
+
+      screamerDiv.style.display = "flex";
+      scream.play();
+
+      // Durdur
+      setTimeout(() => {
+        clearInterval(interval);
+        document.body.style.transform = "translate(0,0)";
+        document.getElementById("controls").style.display = "flex";
+      }, 3000);
+    }
+
+    function restart() {
+      clickCount = 0;
+      reactionTimes = [];
+      document.getElementById("message").style.display = "block";
+      document.getElementById("feedback").style.display = "block";
+      document.getElementById("average").style.display = "block";
+      document.getElementById("screamer").style.display = "none";
+      document.getElementById("controls").style.display = "none";
+      startGame();
+    }
+
+    function share() {
+      const url = window.location.href;
+      navigator.clipboard.writeText(url);
+      alert("Link panoya kopyalandı! Şimdi sıra arkadaşında 😈");
+    }
+
+    startGame();
+  </script>
+</body>
+</html>
